@@ -1,27 +1,39 @@
 package txstore
 
 import (
-	"database/sql"
-	"fmt"
+	"time"
 
-	_ "github.com/mattn/go-sqlite3"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
-type TxDB struct {
-	database sql.DB
+type Transaction struct {
+	gorm.Model
+	Currency    string // e.g. ETH, BTC, etc.
+	ToAddress   string
+	FromAddress string
+	Amount      float32
+	Timestamp   time.Time
 }
 
-func Create() TxDB {
-	database, _ := sql.Open("sqlite3", "./.store.db")
-	statement, _ := database.Prepare("CREATE TABLE IF NOT EXISTS transactions (id INTEGER PRIMARY KEY, from_addr TEXT, to_addr TEXT, amount INTEGER)")
-	statement.Exec()
-	t := TxDB{database: *database}
+type TxStore struct {
+	db gorm.DB
+}
+
+func Create() TxStore {
+	db, err := gorm.Open(sqlite.Open("./.store.db"))
+	if err != nil {
+		panic("failed to connect to db")
+	}
+	db.AutoMigrate(&Transaction{})
+	t := TxStore{db: *db}
 	return t
 }
 
-func (t TxDB) Test() {
-	statement, _ := t.database.Prepare(fmt.Sprintf("INSERT INTO transactions (from, to, amount) VALUES (%s, %s, %f)", "abc", "def", 0.001))
-	statement.Exec()
-	rows, _ := t.database.Query("SELECT id, from, to, amount FROM transactions")
-	fmt.Println(rows)
+func (t TxStore) AddTransaction(curr string, toAddr string, fromAddr string, amt float32, tm time.Time) {
+	t.db.Select(curr, toAddr, fromAddr, amt, tm)
+}
+
+func (t TxStore) Clear() {
+	t.db.Delete(Transaction{})
 }
