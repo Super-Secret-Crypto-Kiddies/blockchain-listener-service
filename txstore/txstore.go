@@ -13,27 +13,29 @@ type Transaction struct {
 	ToAddress   string
 	FromAddress string
 	Amount      float32
+	TxID        string // transaction hash on blockchain
+	Metadata    string // stringified JSON for whatever the merchant's doing
 	Timestamp   time.Time
 }
 
-type TxStore struct {
+type Store struct {
 	db gorm.DB
 }
 
-func Create() TxStore {
+func Create() Store {
 	db, err := gorm.Open(sqlite.Open("./.store.db"))
 	if err != nil {
 		panic("failed to connect to db")
 	}
 	db.AutoMigrate(&Transaction{})
-	t := TxStore{db: *db}
+	t := Store{db: *db}
 	return t
 }
 
-func (t TxStore) AddTransaction(curr string, toAddr string, fromAddr string, amt float32, tm time.Time) {
+func (t Store) AddTransaction(curr string, toAddr string, fromAddr string, amt float32, tm time.Time) {
 	t.db.Select(curr, toAddr, fromAddr, amt, tm)
 }
 
-func (t TxStore) Clear() {
+func (t Store) Clear() {
 	t.db.Delete(Transaction{})
 }
