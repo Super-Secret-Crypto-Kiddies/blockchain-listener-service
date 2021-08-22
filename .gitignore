@@ -20,3 +20,6 @@ go.sum
 
 # Environment stuff
 .env
+
+# Runtime stuff
+*.db
