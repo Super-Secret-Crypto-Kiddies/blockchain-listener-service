@@ -26,6 +26,7 @@ type Transaction struct {
 
 type Wallet struct {
 	gorm.Model
+	ID            uint `gorm:"primaryKey"`
 	Currency      uint32
 	PublicAddress string
 	PrivateKey    string
@@ -41,7 +42,7 @@ type SeedPhrase struct {
 type WalletIndex struct {
 	gorm.Model
 	Currency uint32
-	Index    uint64
+	Index    uint32
 }
 
 var DB *gorm.DB
@@ -61,8 +62,9 @@ func Connect(path string) {
 	DB.AutoMigrate(&WalletIndex{})
 }
 
-func GetWalletIndex(currency uint32) uint64 {
-	var index uint64
-	DB.Where(WalletIndex{Currency: currency}).FirstOrCreate(&index, WalletIndex{Index: 0})
-	return index
+func GetWalletIndex(currency uint32) uint32 {
+	var wIndex WalletIndex
+	DB.Where(WalletIndex{Currency: currency}).FirstOrCreate(&wIndex, WalletIndex{Currency: currency, Index: 0})
+	DB.Model(&wIndex).Update("index", wIndex.Index+1)
+	return wIndex.Index
 }

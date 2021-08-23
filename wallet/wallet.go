@@ -30,7 +30,8 @@ func CreateSeedPhrase() string {
 }
 
 func CreateWallet(coin uint32) database.Wallet {
-	wallet, _ := MasterKey.GetWallet(hdwallet.CoinType(coin), hdwallet.AddressIndex(1))
+	index := database.GetWalletIndex(coin)
+	wallet, _ := MasterKey.GetWallet(hdwallet.CoinType(coin), hdwallet.AddressIndex(index))
 	address, _ := wallet.GetAddress()
 	key := wallet.GetKey().PrivateHex()
 
@@ -40,7 +41,7 @@ func CreateWallet(coin uint32) database.Wallet {
 		PrivateKey:    key,
 	}
 
-	database.DB.Create(account)
+	database.DB.Create(&account)
 
 	return account
 }
