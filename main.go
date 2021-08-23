@@ -1,26 +1,22 @@
 package main
 
 import (
-	"github.com/joho/godotenv"
-	"github.com/gofiber/fiber/v2"
-	"github.com/foxnut/go-hdwallet"
-	"github.com/gofiber/fiber/v2/middleware/recover"
-
+	"blockchain-listener-service/database"
 	"blockchain-listener-service/routes"
 	"blockchain-listener-service/wallet"
-	"blockchain-listener-service/database"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 )
 
 func main() {
-	godotenv.Load()
-	database.Connect()
+	database.Connect("./.store.db")
+	wallet.InitializeWallet()
 
-	wallet.CreateWallet(hdwallet.ETH)
-
-	app := fiber.New(fiber.Config{ Prefork: true })
+	app := fiber.New(fiber.Config{Prefork: true})
 	app.Use(recover.New())
 
-    app.Post("/create-payment-session", routes.CreatePaymentSession)
-	
-    app.Listen("localhost:1337")
+	app.Post("/create-payment-session", routes.CreatePaymentSession)
+
+	app.Listen("localhost:1337")
 }

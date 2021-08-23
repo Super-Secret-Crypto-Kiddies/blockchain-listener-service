@@ -1,8 +1,23 @@
 package routes
 
 import (
+	"blockchain-listener-service/wallet"
+
+	"github.com/foxnut/go-hdwallet"
 	"github.com/gofiber/fiber/v2"
 )
+
+var CoversionMap = map[string]uint32{
+	"BTC":        hdwallet.BTC,
+	"BTCTestnet": hdwallet.BTCTestnet,
+	"LTC":        hdwallet.LTC,
+	"DOGE":       hdwallet.DOGE,
+	"DASH":       hdwallet.DASH,
+	"ETH":        hdwallet.ETH,
+	"ETC":        hdwallet.ETC,
+	"BCH":        hdwallet.BCH,
+	"QTUM":       hdwallet.QTUM,
+}
 
 func CreatePaymentSession(c *fiber.Ctx) error {
 	payload := struct {
@@ -14,7 +29,13 @@ func CreatePaymentSession(c *fiber.Ctx) error {
 		return c.SendStatus(500) // Return status 500 if the JSON payload is not unserializable
 	}
 
-	
+	account := wallet.CreateWallet(CoversionMap[payload.Crypto])
 
-	return c.SendStatus(200)
+	return c.JSON(&fiber.Map{
+		"address": account.PublicAddress,
+	})
+}
+
+func SpawnNewListener() {
+
 }
