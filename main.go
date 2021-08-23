@@ -12,7 +12,7 @@ func main() {
 	database.Connect("./.store.db")
 	wallet.InitializeWallet()
 
-	app := fiber.New()
+	app := fiber.New(fiber.Config{Prefork: true})
 
 	app.Post("/create-payment-session", routes.CreatePaymentSession)
 

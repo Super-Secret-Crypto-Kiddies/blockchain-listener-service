@@ -10,8 +10,8 @@ import (
 var MasterKey *hdwallet.Key
 
 func InitializeWallet() {
-	var seedPhrase database.SeedPhrase
-	database.DB.FirstOrCreate(&seedPhrase, database.SeedPhrase{Seed: CreateSeedPhrase()})
+	seedPhrase := database.SeedPhrase{Seed: CreateSeedPhrase()}
+	database.DB.FirstOrCreate(&seedPhrase)
 
 	master, err := hdwallet.NewKey(
 		hdwallet.Mnemonic(seedPhrase.Seed),
