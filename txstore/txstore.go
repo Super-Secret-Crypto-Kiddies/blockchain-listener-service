@@ -1,8 +1,6 @@
 package txstore
 
 import (
-	"time"
-
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -12,30 +10,31 @@ type Transaction struct {
 	Currency    string // e.g. ETH, BTC, etc.
 	ToAddress   string
 	FromAddress string
-	Amount      float32
-	TxID        string // transaction hash on blockchain
-	Metadata    string // stringified JSON for whatever the merchant's doing
-	Timestamp   time.Time
+	Amount      string
+	TxID        *string // transaction hash on blockchain
+	Metadata    *string // stringified JSON for whatever the merchant's doing
 }
 
-type Store struct {
-	db gorm.DB
+type Wallet struct {
+	Currency   string
+	PublicKey  string
+	PrivateKey string
 }
 
-func Create() Store {
+type Master struct {
+	Key      string
+	Mnemonic string
+}
+
+func CreateDB() gorm.DB {
 	db, err := gorm.Open(sqlite.Open("./.store.db"))
 	if err != nil {
 		panic("failed to connect to db")
 	}
 	db.AutoMigrate(&Transaction{})
-	t := Store{db: *db}
-	return t
-}
+	db.AutoMigrate(&Wallet{})
+	db.AutoMigrate(&Master{})
 
-func (t Store) AddTransaction(curr string, toAddr string, fromAddr string, amt float32, tm time.Time) {
-	t.db.Select(curr, toAddr, fromAddr, amt, tm)
-}
-
-func (t Store) Clear() {
-	t.db.Delete(Transaction{})
+	// we want to generate master key / mnemonic phrase & insert too
+	return *db
 }
