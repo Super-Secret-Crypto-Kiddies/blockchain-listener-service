@@ -1,38 +1,26 @@
 package main
 
 import (
-	"os"
-	"fmt"
 	"github.com/joho/godotenv"
-	"github.com/miguelmota/go-ethereum-hdwallet"
+	"github.com/gofiber/fiber/v2"
+	"github.com/foxnut/go-hdwallet"
+	"github.com/gofiber/fiber/v2/middleware/recover"
+
+	"blockchain-listener-service/routes"
+	"blockchain-listener-service/wallet"
+	"blockchain-listener-service/database"
 )
 
 func main() {
-
 	godotenv.Load()
+	database.Connect()
 
-	wallet, err := hdwallet.NewFromMnemonic(os.Getenv("SEED"))
-	if err != nil {
-		panic(err)
-	}
+	wallet.CreateWallet(hdwallet.ETH)
 
-	fmt.Println(wallet)
+	app := fiber.New(fiber.Config{ Prefork: true })
+	app.Use(recover.New())
 
-    app := fiber.New(fiber.Config{ Prefork: true })
-
-    app.Post("/create-payment-session", func(c *fiber.Ctx) error {
-
-		payload := struct {
-			Crypto string `json:"crypto"` // Ticker symol of the cryptocurrency, e.g. ETH
-			Meta   string `json:"meta"`   // Metadata includes merchant specified data, e.g. userId or productId
-		}{}
+    app.Post("/create-payment-session", routes.CreatePaymentSession)
 	
-		if err := c.BodyParser(&payload); err != nil {
-			return c.SendStatus(500) // Return status 500 if the JSON payload is not unserializable
-		}
-
-		return c.SendStatus(200)
-    })
-
     app.Listen("localhost:1337")
 }

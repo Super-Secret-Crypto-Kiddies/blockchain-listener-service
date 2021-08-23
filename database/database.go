@@ -1,4 +1,4 @@
-package txstore
+package database
 
 import (
 	"time"
@@ -24,20 +24,15 @@ type Wallet struct {
 	PrivateKey string
 }
 
-type Master struct {
-	Key      string
-	Mnemonic string
-}
-
-func CreateDatabase() gorm.DB {
+func Connect() gorm.DB {
 	db, err := gorm.Open(sqlite.Open("./.store.db"))
+
 	if err != nil {
 		panic("failed to connect to db")
 	}
+
 	db.AutoMigrate(&Transaction{})
 	db.AutoMigrate(&Wallet{})
-	db.AutoMigrate(&Master{})
 
-	// we want to generate master key / mnemonic phrase & insert too
 	return *db
 }
