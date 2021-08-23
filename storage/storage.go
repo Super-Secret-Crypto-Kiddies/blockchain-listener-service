@@ -1,4 +1,4 @@
-package txstore
+package storage
 
 import (
 	"gorm.io/driver/sqlite"
